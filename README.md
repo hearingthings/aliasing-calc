@@ -70,18 +70,49 @@ python3 -m aliasing_calc.cli 220 --sr 96000 --partials 12 --decimation 8
 - **freeze**: Aliases partials to very low frequencies (< 50 Hz) for frozen, rumbling effects
 - **mirror**: Creates symmetric patterns around the center of the spectrum
 
+## C Implementation
+
+A lightweight embedded C implementation is available in `c_impl/`:
+
+```c
+#include "aliasing_calc.h"
+
+aliasing_calculator_t calc;
+aliasing_result_t result;
+
+aliasing_calculator_init(&calc, 440.0f, 48000.0f, 8);
+aliasing_calculate(&calc, 16, &result);
+aliasing_print_result(&result);
+```
+
+**Features:**
+- Zero dependencies (only standard C library)
+- Minimal footprint: 12 bytes calculator, 536 bytes results
+- No dynamic allocation
+- Real-time ready
+- C99 compatible
+
+See [`c_impl/README.md`](c_impl/README.md) for full documentation.
+
+**Build and run:**
+```bash
+make all
+make run-all
+```
+
 ## Development Roadmap
 
 - [x] Core aliasing calculation
 - [x] Basic search methods (nearest, purest, richest)
 - [x] Advanced search methods (consonant, subharmonic, metallic, sparse, freeze, mirror)
 - [x] Comprehensive test suite
+- [x] Embedded C implementation
+- [x] 20+ example scripts
 - [ ] Beat frequency targeting
 - [ ] Cascade optimization (multi-stage decimation)
 - [ ] Visualization tools (matplotlib spectrum plots)
 - [ ] Musical preset library
 - [ ] SuperCollider port
-- [ ] Embedded C port
 
 ## License
 
