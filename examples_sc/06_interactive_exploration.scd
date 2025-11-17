@@ -33,7 +33,7 @@
 ~acompare = { |freq = 440, sr = 48000, partials = 8|
 	var methods, result;
 
-	methods = [\nearest, \purest, \richest, \subharmonic, \freeze, \sparse];
+	methods = [\nearest, \purest, \richest, \consonant, \subharmonic, \metallic, \sparse, \freeze, \mirror];
 
 	"Method      Dec   Fund(Hz)   Folded".postln;
 	"--------------------------------------".postln;

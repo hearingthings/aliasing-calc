@@ -18,7 +18,7 @@ fork {
 	"======================================".postln;
 	"".postln;
 
-	methods = [\nearest, \purest, \richest, \subharmonic, \freeze, \sparse];
+	methods = [\nearest, \purest, \richest, \consonant, \subharmonic, \metallic, \sparse, \freeze, \mirror];
 
 	methods.do({ |method|
 		"".postln;

@@ -5,7 +5,7 @@ A creative tool for calculating and exploring aliasing effects in audio decimati
 ## Features
 
 - **Environment variable functions** - Easy to use with `~` prefix
-- **6 search methods** - Find optimal decimation rates for different creative goals
+- **9 search methods** - Find optimal decimation rates for different creative goals
 - **Real-time ready** - Calculate and apply aliasing in synthesis
 - **Pure SuperCollider** - No external dependencies
 - **Interactive workflow** - Perfect for live coding and exploration
@@ -84,9 +84,12 @@ result = ~aliasingSearch.(440, 48000, \purest, 8, 2, 64);
   - `\nearest` - Keep fundamental close to original
   - `\purest` - Minimize beating, maximize harmonicity
   - `\richest` - Maximize spectral complexity
+  - `\consonant` - Form musical intervals between partials
   - `\subharmonic` - Lower the fundamental pitch
-  - `\freeze` - Alias partials near DC (< 50 Hz)
+  - `\metallic` - Create bell-like inharmonic ratios
   - `\sparse` - Maximize gaps between partials
+  - `\freeze` - Alias partials near DC (< 50 Hz)
+  - `\mirror` - Create symmetric spectrum patterns
 - `numPartials` - Number of partials (default: 8)
 - `minDecimation` - Minimum decimation rate (default: 2)
 - `maxDecimation` - Maximum decimation rate (default: 64)
@@ -160,14 +163,23 @@ Minimizes beating and inharmonicity for the cleanest, most harmonic sound. Great
 ### `\richest`
 Maximizes spectral complexity and inharmonicity for dense, complex timbres. Perfect for noisy, chaotic sounds.
 
+### `\consonant`
+Creates musical intervals (octaves, fifths, fourths, thirds) between aliased partials. Perfect for harmonic, tonal textures with clear interval relationships.
+
 ### `\subharmonic`
 Lowers the pitch by aliasing the fundamental below its original frequency. Excellent for bass enhancement and octave-down effects.
+
+### `\metallic`
+Generates inharmonic ratios similar to bells and metallic percussion (2.0, 3.0, 4.4, 5.4, 6.8, 8.2). Creates bell-like, gong-like timbres.
+
+### `\sparse`
+Creates wide gaps between partials for open, spacious spectra. Good for minimal, transparent sounds.
 
 ### `\freeze`
 Aliases partials to very low frequencies (< 50 Hz) for frozen, rumbling, subsonic effects. Creates deep, slow-moving timbres.
 
-### `\sparse`
-Creates wide gaps between partials for open, spacious spectra. Good for minimal, transparent sounds.
+### `\mirror`
+Creates symmetric patterns around the center of the spectrum. Results in balanced frequency distribution with mirrored partials.
 
 ## Usage Examples
 

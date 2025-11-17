@@ -326,6 +326,146 @@
 	sparseness.neg  // Negate so lower is better
 };
 
+/*
+ * Score based on how well aliased partials form musical intervals
+ * Lower score is better
+ */
+~aliasingScoreConsonant = { |result|
+	var aliasedFreqs, sortedFreqs, targetRatios, consonanceScore, numPairs;
+	var ratio, bestMatchError, bestWeight, error, weight;
+
+	aliasedFreqs = ~aliasingGetAliasedFreqs.(result);
+	sortedFreqs = aliasedFreqs.select({ |f| f > 10 }).sort;  // Ignore very low freqs
+
+	if(sortedFreqs.size < 2, { ^inf });
+
+	// Musical interval ratios (ratio, name, weight)
+	targetRatios = [
+		[2.0, "octave", 1.0],      // Perfect consonance
+		[1.5, "fifth", 0.8],       // Strong consonance
+		[4/3, "fourth", 0.7],      // Strong consonance
+		[5/4, "maj3rd", 0.6],      // Medium consonance
+		[6/5, "min3rd", 0.5],      // Medium consonance
+		[3.0, "octave+5th", 0.4],  // Compound interval
+		[8/5, "min6th", 0.3],      // Weak consonance
+		[5/3, "maj6th", 0.3]       // Weak consonance
+	];
+
+	consonanceScore = 0.0;
+	numPairs = 0;
+
+	// Check all pairs of partials
+	sortedFreqs.size.do({ |i|
+		(i + 1).do({ |j|
+			if(j < sortedFreqs.size, {
+				ratio = sortedFreqs[j] / sortedFreqs[i];
+
+				// Find closest target ratio
+				bestMatchError = inf;
+				bestWeight = 0.0;
+
+				targetRatios.do({ |targetData|
+					var targetRatio, name, targetWeight;
+					targetRatio = targetData[0];
+					name = targetData[1];
+					targetWeight = targetData[2];
+
+					error = abs(ratio - targetRatio) / targetRatio;
+					if(error < bestMatchError, {
+						bestMatchError = error;
+						bestWeight = targetWeight;
+					});
+				});
+
+				// Weight by consonance strength
+				consonanceScore = consonanceScore + (bestMatchError / (bestWeight + 0.1));
+				numPairs = numPairs + 1;
+			});
+		});
+	});
+
+	consonanceScore / max(numPairs, 1)
+};
+
+/*
+ * Score based on inharmonic ratios similar to metallic percussion
+ * Lower score is better
+ */
+~aliasingScoreMetallic = { |result|
+	var aliasedFreqs, sortedFreqs, targetRatios, fundamental, metallicScore;
+	var ratio, minError, error, target;
+
+	aliasedFreqs = ~aliasingGetAliasedFreqs.(result);
+	sortedFreqs = aliasedFreqs.select({ |f| f > 10 }).sort;
+
+	if(sortedFreqs.size < 3, { ^inf });
+
+	// Target ratios for bell-like sounds (inharmonic)
+	targetRatios = [2.0, 3.0, 4.4, 5.4, 6.8, 8.2];
+
+	fundamental = sortedFreqs[0];
+	metallicScore = 0.0;
+
+	// Check ratios for partials above fundamental
+	(sortedFreqs.size - 1).do({ |i|
+		var freq;
+		freq = sortedFreqs[i + 1];
+		ratio = freq / fundamental;
+
+		// Find closest target ratio
+		minError = inf;
+		targetRatios.do({ |tgt|
+			error = abs(ratio - tgt);
+			if(error < minError, { minError = error });
+		});
+
+		// Penalize if too close to integer (harmonic)
+		if(abs(ratio - ratio.round) < 0.1, {
+			metallicScore = metallicScore + 10.0;  // Big penalty for harmonic
+		}, {
+			metallicScore = metallicScore + minError;
+		});
+	});
+
+	// Normalize by number of partials
+	metallicScore / sortedFreqs.size
+};
+
+/*
+ * Score based on symmetric aliasing pattern around center frequency
+ * Lower score is better
+ */
+~aliasingScoreMirror = { |result|
+	var aliasedFreqs, nyquist, center, distances, sortedDists, symmetryError;
+	var pairDiff, i;
+
+	aliasedFreqs = ~aliasingGetAliasedFreqs.(result);
+	nyquist = result[\nyquistFreq];
+
+	if(aliasedFreqs.size < 3, { ^inf });
+
+	// Check symmetry around Nyquist/2
+	center = nyquist / 2.0;
+
+	// Calculate distances from center
+	distances = aliasedFreqs.collect({ |f| abs(f - center) });
+
+	// Sort distances and check if they come in pairs
+	sortedDists = distances.sort;
+
+	symmetryError = 0.0;
+	i = 0;
+	while({ i < (sortedDists.size - 1) }, {
+		// Check if consecutive pairs are similar
+		pairDiff = abs(sortedDists[i] - sortedDists[i + 1]);
+		symmetryError = symmetryError + pairDiff;
+		i = i + 2;
+	});
+
+	// Normalize by number of partials
+	symmetryError / aliasedFreqs.size
+};
+
 // ============================================================================
 // Search Function
 // ============================================================================
@@ -336,7 +476,8 @@
  * Args:
  *   fundamentalFreq - Fundamental frequency in Hz
  *   sampleRate - Sample rate in Hz
- *   method - Search method: \nearest, \purest, \richest, \subharmonic, \freeze, \sparse
+ *   method - Search method: \nearest, \purest, \richest, \consonant, \subharmonic,
+ *            \metallic, \sparse, \freeze, \mirror
  *   numPartials - Number of partials to analyze (default: 8)
  *   minDecimation - Minimum decimation rate (default: 2)
  *   maxDecimation - Maximum decimation rate (default: 64)
@@ -352,9 +493,12 @@
 		nearest: ~aliasingScoreNearest,
 		purest: ~aliasingScorePurest,
 		richest: ~aliasingScoreRichest,
+		consonant: ~aliasingScoreConsonant,
 		subharmonic: ~aliasingScoreSubharmonic,
+		metallic: ~aliasingScoreMetallic,
+		sparse: ~aliasingScoreSparse,
 		freeze: ~aliasingScoreFreeze,
-		sparse: ~aliasingScoreSparse
+		mirror: ~aliasingScoreMirror
 	);
 
 	scoreFunc = scoreFuncs[method];
