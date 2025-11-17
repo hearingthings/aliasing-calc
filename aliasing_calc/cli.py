@@ -18,8 +18,25 @@ Examples:
   # Search for best decimation rate using "purest" method
   aliasing-calc 440 --search purest
 
+  # Search for subharmonic decimation (lower pitch)
+  aliasing-calc 440 --search subharmonic --max-decimation 64
+
+  # Find metallic/bell-like inharmonic pattern
+  aliasing-calc 880 --search metallic --partials 10
+
   # Analyze 220Hz with 12 partials at 96kHz sample rate
   aliasing-calc 220 --sr 96000 --partials 12 --decimation 8
+
+Search methods:
+  nearest      - Keep fundamental close to original pitch
+  purest       - Minimize beating, maximize harmonicity
+  richest      - Maximize spectral complexity
+  consonant    - Form musical intervals between partials
+  subharmonic  - Lower the fundamental pitch
+  metallic     - Create bell-like inharmonic ratios
+  sparse       - Maximize gaps between partials
+  freeze       - Alias partials near DC (low frequencies)
+  mirror       - Create symmetric spectrum patterns
         """
     )
 
@@ -55,7 +72,10 @@ Examples:
 
     action_group.add_argument(
         "--search", "-s",
-        choices=["nearest", "purest", "richest"],
+        choices=[
+            "nearest", "purest", "richest", "consonant",
+            "subharmonic", "metallic", "sparse", "freeze", "mirror"
+        ],
         help="Search for optimal decimation rate using specified method"
     )
 
