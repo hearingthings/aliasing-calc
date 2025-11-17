@@ -100,6 +100,45 @@ make all
 make run-all
 ```
 
+## SuperCollider Implementation
+
+A complete SuperCollider implementation using environment variables is available in `supercollider/`:
+
+```supercollider
+// Load the library
+"supercollider/aliasing_calc.scd".load;
+
+// Quick calculation
+~aliasingCalc.(440, 16);  // 440 Hz at 16x decimation
+
+// Search for optimal decimation
+~aliasingFind.(440, \purest);
+
+// Use in synthesis
+(
+var result = ~aliasingCalc.(220, 32, 48000, 12);
+var freqs = ~aliasingGetAliasedFreqs.(result);
+{ Mix(SinOsc.ar(freqs, 0, 1/freqs.size)) * 0.3 ! 2 }.play;
+)
+```
+
+**Features:**
+- Environment variable functions (`~aliasingCalc`, `~aliasingFind`, etc.)
+- 6 search methods (\nearest, \purest, \richest, \subharmonic, \freeze, \sparse)
+- Real-time synthesis integration
+- Perfect for live coding and interactive exploration
+- Pure SuperCollider (no external dependencies)
+
+**6 Example files in `examples_sc/`:**
+- Basic usage and result inspection
+- Search method comparisons
+- Subharmonic bass generation
+- Real-time synthesis with aliased partials
+- Interactive exploration helpers
+- Pattern integration
+
+See [`supercollider/README.md`](supercollider/README.md) for full documentation.
+
 ## Development Roadmap
 
 - [x] Core aliasing calculation
@@ -108,11 +147,11 @@ make run-all
 - [x] Comprehensive test suite
 - [x] Embedded C implementation
 - [x] 20+ example scripts
+- [x] SuperCollider implementation
 - [ ] Beat frequency targeting
 - [ ] Cascade optimization (multi-stage decimation)
 - [ ] Visualization tools (matplotlib spectrum plots)
 - [ ] Musical preset library
-- [ ] SuperCollider port
 
 ## License
 
