@@ -92,6 +92,10 @@ def calculate_richest_score(result: "AliasingResult") -> float:
     sorted_freqs = np.sort(aliased_freqs)
     fundamental_est = sorted_freqs[0]
 
+    # Avoid division by zero if fundamental is very low
+    if fundamental_est < 1.0:
+        fundamental_est = 1.0
+
     inharmonicity = 0.0
     for i, freq in enumerate(sorted_freqs):
         expected_harmonic = fundamental_est * (i + 1)
